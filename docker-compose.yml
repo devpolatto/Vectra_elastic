@@ -1,0 +1,57 @@
+version: '3.7'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.2
+    environment:
+      cluster.name: "elastic-cluster01"
+      node.name: "elastic-node01"
+      discovery.type: "single-node"
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      # change your password
+      ELASTIC_PASSWORD: exemple
+      xpack.security.enabled: "false"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es-certs:/usr/share/elasticsearch/config/certs
+      - es-data01:/usr/share/elasticsearch/data
+    networks:
+      stack:
+        ipv4_address: 172.20.0.10
+ 
+  kibana:
+    depends_on:
+      - elasticsearch
+    image: docker.elastic.co/kibana/kibana:8.1.2
+    ports:
+      - "5601:5601"
+    volumes:
+      - kibana-certs:/usr/share/kibana/config/certs
+      - kibana-data:/usr/share/kibana/data
+    environment:
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    networks:
+      stack:
+        ipv4_address: 172.20.0.30
+      
+volumes:
+  es-certs:
+    driver: local
+  es-data01:
+    driver: local
+  kibana-certs:
+    driver: local
+  kibana-data:
+    driver: local
+
+networks:
+  stack:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1
+  
+
